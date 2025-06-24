@@ -1,9 +1,15 @@
 'use client'
 import React, { useState } from "react";
 import { AIAgentChat } from "./AIAgentChat";
+import { useRouter } from "next/navigation";
 
 export const DataDomainPage = () => {
   const [activeTab, setActiveTab] = useState('discovery');
+  const router = useRouter();
+
+  const handleViewDiagram = (diagramId: string) => {
+    router.push(`/data-domain/diagram/${diagramId}`);
+  };
 
   return (
     <div className="space-y-6">
@@ -155,7 +161,10 @@ export const DataDomainPage = () => {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="px-3 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800">
+                      <button 
+                        onClick={() => handleViewDiagram('ecommerce')}
+                        className="px-3 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
+                      >
                         Ver
                       </button>
                       <button className="px-3 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full hover:bg-green-200 dark:hover:bg-green-800">
@@ -176,7 +185,10 @@ export const DataDomainPage = () => {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="px-3 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800">
+                      <button 
+                        onClick={() => handleViewDiagram('customer-analytics')}
+                        className="px-3 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full hover:bg-blue-200 dark:hover:bg-blue-800"
+                      >
                         Ver
                       </button>
                       <button className="px-3 py-1 text-xs bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full hover:bg-green-200 dark:hover:bg-green-800">
@@ -187,8 +199,6 @@ export const DataDomainPage = () => {
                 </div>
               </div>
             </div>
-            
-            {/* Original Diagram Component */}
           </div>
         )}
         {activeTab === 'ai-agent' && <AIAgentChat />}
