@@ -12,7 +12,7 @@ export const AIAgentChat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: '¡Hola! Soy tu agente IA. ¿En qué puedo ayudarte hoy?',
+      text: '¡Hola! Soy tu agente IA especializado en Data Domain. ¿En qué puedo ayudarte hoy?',
       sender: 'ai',
       timestamp: new Date()
     }
@@ -29,8 +29,63 @@ export const AIAgentChat = () => {
     scrollToBottom();
   }, [messages]);
 
+  const callAIAgent = async (question: string): Promise<string> => {
+    try {
+      const response = await fetch('https://451mknt4hg.execute-api.us-east-1.amazonaws.com/default/Agente-de-Consultas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          question: question
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data && data.answer) {
+        return data.answer;
+      } else {
+        return 'No se recibió una respuesta válida del agente.';
+      }
+    } catch (error) {
+      console.error('Error calling AI agent:', error);
+      return 'Error al comunicarse con el agente. Por favor, intenta de nuevo.';
+    }
+  };
+
+  // Test function to check endpoint accessibility
+  const testEndpoint = async () => {
+    try {
+      const response = await fetch('https://451mknt4hg.execute-api.us-east-1.amazonaws.com/default/Agente-de-Consultas', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          question: "test"
+        })
+      });
+      
+      console.log('Test response status:', response.status);
+      const data = await response.json();
+      console.log('Test response data:', data);
+    } catch (error) {
+      console.error('Test failed:', error);
+    }
+  };
+
+  // Test on component mount
+  useEffect(() => {
+    testEndpoint();
+  }, []);
+
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return;
+    if (!inputMessage.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -40,24 +95,36 @@ export const AIAgentChat = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = inputMessage;
     setInputMessage('');
     setIsLoading(true);
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
+    try {
+      const aiResponse = await callAIAgent(currentInput);
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: 'Esta es una respuesta simulada del agente IA. En una implementación real, aquí se conectaría con tu API de IA.',
+        text: aiResponse,
         sender: 'ai',
         timestamp: new Date()
       };
+      
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: 'Error al procesar tu mensaje. Por favor, intenta de nuevo.',
+        sender: 'ai',
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isLoading) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -128,13 +195,20 @@ export const AIAgentChat = () => {
         
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-gray-700 dark:to-gray-600 text-gray-800 dark:text-white px-4 py-2 rounded-lg shadow-md border border-purple-200 dark:border-purple-700 relative">
-              <div className="flex space-x-1">
-                <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-gray-700 dark:to-gray-600 text-gray-800 dark:text-white px-4 py-3 rounded-lg shadow-md border border-purple-200 dark:border-purple-700 relative max-w-xs lg:max-w-md">
+              <div className="flex items-center space-x-3">
+                <div className="flex space-x-1">
+                  <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm text-gray-600 dark:text-gray-400 font-medium">Consultando base de conocimiento...</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-500">Esperando respuesta del servidor</span>
+                </div>
               </div>
               <div className="absolute -top-1 -left-1 text-yellow-400 animate-pulse">✨</div>
+              <div className="absolute -bottom-1 -right-1 text-blue-400 animate-bounce">⭐</div>
             </div>
           </div>
         )}
