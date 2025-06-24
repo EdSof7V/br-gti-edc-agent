@@ -130,6 +130,17 @@ export const AIAgentChat = () => {
     }
   };
 
+  // Función para formatear el texto del agente IA
+  function formatAIText(text: string) {
+    // Negrita para **texto**
+    let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>');
+    // Borde tipo botón para [texto]
+    formatted = formatted.replace(/\[(.*?)\]/g, '<span class="inline-block border border-blue-500 text-blue-600 px-2 py-0.5 rounded-md text-xs font-semibold bg-white dark:bg-gray-800 mr-1 mb-1 align-middle" style="margin-right:2px;">$1</span>');
+    // Saltos de línea a <br />
+    formatted = formatted.replace(/\n/g, '<br />');
+    return formatted;
+  }
+
   return (
     <div className="flex flex-col h-[600px] bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800 rounded-lg shadow-lg border border-purple-200 dark:border-purple-800 relative overflow-hidden">
       {/* Magical background effects */}
@@ -180,15 +191,15 @@ export const AIAgentChat = () => {
               {message.sender === 'ai' && (
                 <div className="absolute -top-1 -left-1 text-yellow-400 animate-pulse">✨</div>
               )}
-              <p className="text-sm">{message.text}</p>
+              <p
+                className="text-sm whitespace-pre-line font-normal"
+                dangerouslySetInnerHTML={{ __html: formatAIText(message.text) }}
+              />
               <p className={`text-xs mt-1 ${
                 message.sender === 'user' ? 'text-purple-200' : 'text-gray-500 dark:text-gray-400'
               }`}>
                 {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               </p>
-              {message.sender === 'ai' && (
-                <div className="absolute -bottom-1 -right-1 text-blue-400 animate-bounce">⭐</div>
-              )}
             </div>
           </div>
         ))}
@@ -208,7 +219,6 @@ export const AIAgentChat = () => {
                 </div>
               </div>
               <div className="absolute -top-1 -left-1 text-yellow-400 animate-pulse">✨</div>
-              <div className="absolute -bottom-1 -right-1 text-blue-400 animate-bounce">⭐</div>
             </div>
           </div>
         )}
